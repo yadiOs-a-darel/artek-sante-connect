@@ -1,0 +1,140 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: artek
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword}
+      POSTGRES_DB: artek_sante
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U artek -d artek_sante"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-devredis}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: artek
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-devmongo}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  influxdb:
+    image: influxdb:2-alpine
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: artek
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD:-devinflux}
+      DOCKER_INFLUXDB_INIT_ORG: artek
+      DOCKER_INFLUXDB_INIT_BUCKET: artek_iot
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN:-devtoken}
+    ports:
+      - "8086:8086"
+    volumes:
+      - influx_data:/var/lib/influxdb2
+
+  api:
+    build:
+      context: ./apps/backend
+      dockerfile: ../../infra/docker/backend.Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql+asyncpg://artek:${DB_PASSWORD:-devpassword}@db:5432/artek_sante
+      REDIS_URL: redis://:${REDIS_PASSWORD:-devredis}@redis:6379/0
+      MONGODB_URL: mongodb://artek:${MONGO_PASSWORD:-devmongo}@mongo:27017/artek_sante
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN:-devtoken}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-change-in-prod-32chars-min}
+      MEDICAL_ENCRYPTION_KEY: ${MEDICAL_ENCRYPTION_KEY:-devkey32byteschangeinproduction!}
+      APP_ENV: development
+      DEBUG: "true"
+    volumes:
+      - ./apps/backend:/app
+      - ./ml/models:/app/ml/models
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery:
+    build:
+      context: ./apps/backend
+      dockerfile: ../../infra/docker/backend.Dockerfile
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql+asyncpg://artek:${DB_PASSWORD:-devpassword}@db:5432/artek_sante
+      REDIS_URL: redis://:${REDIS_PASSWORD:-devredis}@redis:6379/0
+    depends_on: [redis, db]
+
+  flower:
+    build:
+      context: ./apps/backend
+      dockerfile: ../../infra/docker/backend.Dockerfile
+    command: celery -A app.tasks.celery_app flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on: [celery]
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: ../../infra/docker/web.Dockerfile
+    command: pnpm dev --host 0.0.0.0
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_DAILY_DOMAIN: ${DAILY_API_KEY:-}
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-devgrafana}
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+    volumes:
+      - ./iot/mqtt-broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
+  influx_data:
+  grafana_data:
+  mosquitto_data:

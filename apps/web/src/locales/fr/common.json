@@ -1,0 +1,15 @@
+{
+  "app": {
+    "name": "ARTEK Connect Santé",
+    "tagline": "Télémédecine solaire pour la RCA"
+  },
+  "nav": {
+    "home": "Accueil",
+    "patients": "Patients",
+    "consultations": "Consultations"
+  },
+  "auth": {
+    "login": "Connexion",
+    "logout": "Déconnexion"
+  }
+}

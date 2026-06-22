@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  .surface-muted {
+    @apply bg-gray-100 dark:bg-gray-800/50;
+  }
+  .input-field {
+    @apply w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-artek-green text-sm text-gray-900
+      dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100;
+  }
+  .input-disabled {
+    @apply w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 text-sm
+      dark:bg-gray-800/50 dark:border-gray-700;
+  }
+  .btn-primary {
+    @apply w-full py-2 rounded-lg bg-artek-green hover:bg-artek-green/90 text-white font-medium text-sm disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply w-full py-2 rounded-lg bg-gray-100 border border-gray-300 hover:border-gray-400 font-medium text-sm text-gray-900 disabled:opacity-50
+      dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-100;
+  }
+  .card-section {
+    @apply p-6 rounded-xl surface border;
+  }
+  .list-item {
+    @apply p-3 rounded-lg surface-muted border border-gray-200 dark:border-gray-700;
+  }
+  .list-row {
+    @apply flex items-center justify-between p-4 rounded-xl surface border transition;
+  }
+  .action-tile {
+    @apply p-4 rounded-lg bg-gray-100 border border-gray-200 hover:border-gray-300 transition text-center text-gray-900
+      dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-100;
+  }
+  .consultation-shell {
+    @apply flex h-[calc(100vh-8rem)] -m-6 rounded-xl overflow-hidden border surface;
+  }
+  .consultation-panel {
+    @apply bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  .call-stage {
+    @apply w-full h-full bg-gray-200 dark:bg-gray-950;
+  }
+  .call-stage-active {
+    @apply w-full h-full bg-black;
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "app": {
+    "name": "ARTEK Connect Santé",
+    "tagline": "Télémédecine na nzoni na RCA"
+  },
+  "nav": {
+    "home": "Nzoni",
+    "patients": "Azo",
+    "consultations": "Consultations"
+  },
+  "auth": {
+    "login": "Kota",
+    "logout": "Bima"
+  }
+}

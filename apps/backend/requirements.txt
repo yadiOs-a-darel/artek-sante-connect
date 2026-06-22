@@ -1,0 +1,53 @@
+# Python 3.11–3.12 requis (3.14 non supporté par asyncpg/pydantic actuellement)
+
+# Core FastAPI
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.18
+httpx==0.28.1
+
+# Base de données (asyncpg uniquement — psycopg2 retiré, incompatible Python 3.14)
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# Validation
+pydantic==2.10.3
+pydantic-settings==2.6.1
+email-validator==2.2.0
+
+# Authentification
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Cache / Queue
+redis==5.0.3
+celery[redis]==5.3.6
+flower==2.0.1
+
+# Sécurité
+cryptography==42.0.5
+slowapi==0.1.9
+
+# Monitoring
+prometheus-fastapi-instrumentator==7.0.0
+sentry-sdk[fastapi]==1.45.0
+
+# Télécom
+qrcode[pil]==7.4.2
+
+google-api-python-client==2.154.0
+google-auth==2.37.0
+
+# Tests
+pytest==8.0.2
+pytest-asyncio==0.23.5
+pytest-cov==5.0.0
+factory-boy==3.3.0
+respx==0.21.1
+
+# Dev tools
+black==24.3.0
+isort==5.13.2
+flake8==7.0.0
+bandit==1.7.7
