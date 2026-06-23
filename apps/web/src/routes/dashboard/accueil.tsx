@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, Users, Video, Activity, FileText } from "lucide-react";
+import { Calendar, Users, Video, Activity, FileText, Sun } from "lucide-react";
 import { PageHeader, StatCard, LoadingState, StatusBadge } from "@/components/ui/dashboard";
 import { useDashboardStats, useConsultations } from "@/hooks/useDashboard";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatPhone } from "@/lib/utils";
+import { DemandeActions } from "@/components/consultation/DemandeActions";
 
 export const Route = createFileRoute("/dashboard/accueil")({
   component: AccueilPage,
@@ -36,27 +37,71 @@ function AccueilPage() {
     {
       label: "Kiosques actifs",
       value: stats?.kiosques_actifs ?? 0,
-      icon: Activity,
-      color: "text-purple-400",
+      icon: Sun,
+      color: "text-artek-orange",
+      link: "/dashboard/kiosques" as const,
     },
   ];
 
   const recentes = consultations?.items?.slice(0, 5) ?? [];
+  const demandes =
+    consultations?.items?.filter((c) => c.statut === "en_attente_validation") ?? [];
 
   return (
-    <div>
+    <div className="page-stack">
       <PageHeader
         title="Tableau de bord"
         description="Vue d'ensemble de votre activité médicale"
       />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {cards.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
+      {demandes.length > 0 && (
+        <section className="card-section border-artek-orange/30 bg-artek-orange/5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Demandes à valider ({demandes.length})
+            </h2>
+            <Link to="/dashboard/agenda" className="text-sm text-artek-green hover:underline">
+              Voir l&apos;agenda
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {demandes.slice(0, 3).map((c) => {
+              const fromKiosque =
+                c.symptomes?.includes("[Kiosque]") || c.motif?.includes("[Kiosque]");
+              return (
+              <div key={c.id} className="p-3 rounded-lg surface border">
+                {fromKiosque && (
+                  <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-artek-orange/15 text-artek-orange mb-2">
+                    Kiosque ASC
+                  </span>
+                )}
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {c.patient_telephone ? formatPhone(c.patient_telephone) : "Patient"}
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {c.symptomes || c.motif}
+                </p>
+                <DemandeActions consultationId={c.id} />
+              </div>
+            );
+            })}
+          </div>
+        </section>
+      )}
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+        {cards.map((stat) =>
+          "link" in stat && stat.link ? (
+            <Link key={stat.label} to={stat.link} className="block hover:opacity-90 transition">
+              <StatCard {...stat} />
+            </Link>
+          ) : (
+            <StatCard key={stat.label} {...stat} />
+          )
+        )}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
         <div className="card-section">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Consultations récentes</h2>

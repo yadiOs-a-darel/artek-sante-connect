@@ -4,9 +4,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.constants.phone import ORANGE_RCA_PHONE_PATTERN
+
 
 class PatientCreate(BaseModel):
-    telephone: str = Field(..., pattern=r"^7\d{7}$")
+    telephone: str = Field(..., pattern=ORANGE_RCA_PHONE_PATTERN)
     nom: str
     prenom: str
     prefecture: str

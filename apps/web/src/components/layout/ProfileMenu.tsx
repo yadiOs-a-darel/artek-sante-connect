@@ -69,14 +69,12 @@ export function ProfileMenu() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {profile ? formatPhone(profile.telephone) : ""}
             </p>
-            <p className="text-xs text-gray-500 mt-2 font-mono break-all">
-              ID : {profile?.id ?? "—"}
-            </p>
-            <p className="text-xs text-gray-500">{profile?.specialite}</p>
+            <p className="text-xs text-gray-500 mt-1">{profile?.specialite}</p>
           </div>
           <div className="p-1">
             <Link
               to="/dashboard/parametres"
+              search={{ tab: "profil" }}
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >

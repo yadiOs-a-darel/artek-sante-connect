@@ -1,0 +1,32 @@
+export const RCA_PREFECTURES = [
+  "Bangui",
+  "Bamingui-Bangoran",
+  "Basse-Kotto",
+  "Haute-Kotto",
+  "Haut-Mbomou",
+  "Kémo",
+  "Lobaye",
+  "Mambéré-Kadéï",
+  "Mbomou",
+  "Nana-Grébizi",
+  "Nana-Mambéré",
+  "Ombella-M'Poko",
+  "Ouaka",
+  "Ouham",
+  "Ouham-Pendé",
+  "Sangha-Mbaéré",
+  "Vakaga",
+] as const;
+
+export const MEDECIN_SPECIALITES = [
+  "Médecine générale",
+  "Pédiatrie",
+  "Gynécologie-obstétrique",
+  "Chirurgie générale",
+  "Cardiologie",
+  "Dermatologie",
+  "Ophtalmologie",
+  "ORL",
+  "Psychiatrie",
+  "Autre",
+] as const;

@@ -5,14 +5,19 @@ import { useVideoCall } from "@/hooks/useVideoCall";
 interface VideoCallProps {
   consultationId: string;
   audioOnly?: boolean;
+  fallbackMeetUrl?: string | null;
 }
 
-export function VideoCall({ consultationId, audioOnly = false }: VideoCallProps) {
+export function VideoCall({
+  consultationId,
+  audioOnly = false,
+  fallbackMeetUrl,
+}: VideoCallProps) {
   const { data: session, isLoading, error, refetch, isFetching } = useVideoCall(consultationId);
   const [copied, setCopied] = useState(false);
 
-  const meetUrl = session?.room_url;
-  const isReady = session?.configured && !!meetUrl;
+  const meetUrl = session?.room_url || fallbackMeetUrl || undefined;
+  const isReady = !!meetUrl;
 
   const openMeet = () => {
     if (meetUrl) window.open(meetUrl, "_blank", "noopener,noreferrer");
@@ -26,8 +31,8 @@ export function VideoCall({ consultationId, audioOnly = false }: VideoCallProps)
   };
 
   if (isLoading || isFetching) {
-    return (
-      <div className="call-stage flex flex-col items-center justify-center gap-3 h-full">
+  return (
+    <div className="call-stage flex flex-col items-center justify-center gap-4 h-full">
         <Loader2 className="w-8 h-8 text-artek-green animate-spin" />
         <p className="text-gray-500 dark:text-gray-400 text-sm">
           Préparation de la salle Google Meet...
@@ -67,20 +72,30 @@ export function VideoCall({ consultationId, audioOnly = false }: VideoCallProps)
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
             {session?.message ??
-              "Ajoutez GOOGLE_SERVICE_ACCOUNT_JSON ou GOOGLE_MEET_DEV_URL dans le fichier .env."}
+              "Ajoutez un lien Google Meet dans le fichier .env à la racine du projet, puis redémarrez le backend."}
           </p>
-          <div className="text-left text-xs text-gray-600 dark:text-gray-400 surface-muted border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2 font-mono">
-            <p>GOOGLE_SERVICE_ACCOUNT_JSON=&#123;...&#125;</p>
-            <p>GOOGLE_CALENDAR_ID=primary</p>
+          <ol className="text-left text-sm text-gray-600 dark:text-gray-400 mb-4 space-y-2 list-decimal list-inside">
+            <li>Ouvrez <strong>meet.google.com</strong> → Nouvelle réunion → Créer une réunion</li>
+            <li>Copiez le lien (ex. <code className="text-xs">abc-defg-hij</code>)</li>
+            <li>Dans <code className="text-xs">.env</code> : <code className="text-xs">GOOGLE_MEET_DEV_URL=https://meet.google.com/abc-defg-hij</code></li>
+            <li>Redémarrez le backend et cliquez sur Réessayer</li>
+          </ol>
+          <div className="text-left text-xs text-gray-600 dark:text-gray-400 surface-muted border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2 font-mono mb-4">
             <p>GOOGLE_MEET_DEV_URL=https://meet.google.com/xxx-xxxx-xxx</p>
           </div>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 rounded-lg bg-artek-green text-white text-sm hover:bg-artek-green/90"
+          >
+            Réessayer
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="call-stage flex flex-col items-center justify-center h-full p-8">
+    <div className="call-stage flex flex-col items-center justify-center h-full p-6 md:p-10">
       <div className="w-20 h-20 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center mb-6 shadow-sm">
         <svg viewBox="0 0 87.5 72" className="w-12 h-12" aria-hidden>
           <path fill="#00832d" d="M49.5 36l8.53 9.75L73.5 42.25V54h-24z" />
@@ -98,7 +113,7 @@ export function VideoCall({ consultationId, audioOnly = false }: VideoCallProps)
         La visioconférence se déroule sur Google Meet. Cliquez pour rejoindre la salle
         {session?.room_name ? ` (${session.room_name})` : ""}.
       </p>
-      <div className="flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap gap-4 justify-center">
         <button
           onClick={openMeet}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-artek-green hover:bg-artek-green/90 text-white font-medium"

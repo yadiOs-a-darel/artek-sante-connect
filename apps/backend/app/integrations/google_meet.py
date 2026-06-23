@@ -20,11 +20,18 @@ class GoogleMeetClient:
             return self._create_via_calendar_api(title, consultation_id)
 
         if settings.GOOGLE_MEET_DEV_URL:
+            url = settings.GOOGLE_MEET_DEV_URL.strip().rstrip("/")
+            if url.endswith("/new"):
+                raise GoogleMeetError(
+                    "GOOGLE_MEET_DEV_URL invalide : meet.google.com/new ne permet pas "
+                    "de rejoindre une réunion. Créez une réunion sur meet.google.com "
+                    "et copiez le lien complet (ex. https://meet.google.com/abc-defg-hij)."
+                )
             return settings.GOOGLE_MEET_DEV_URL
 
         raise GoogleMeetError(
-            "Configurez GOOGLE_SERVICE_ACCOUNT_JSON (Calendar API) "
-            "ou GOOGLE_MEET_DEV_URL pour le développement."
+            "Configurez GOOGLE_MEET_DEV_URL dans le fichier .env à la racine du projet "
+            "(ex. https://meet.google.com/abc-defg-hij), puis redémarrez le backend."
         )
 
     def _create_via_calendar_api(self, title: str, consultation_id: str) -> str:

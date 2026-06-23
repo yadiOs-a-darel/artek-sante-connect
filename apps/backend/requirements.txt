@@ -35,6 +35,7 @@ sentry-sdk[fastapi]==1.45.0
 
 # Télécom
 qrcode[pil]==7.4.2
+reportlab==4.2.5
 
 google-api-python-client==2.154.0
 google-auth==2.37.0

@@ -9,6 +9,7 @@ import {
 import { useConsultations } from "@/hooks/useDashboard";
 import { formatDate, formatPhone } from "@/lib/utils";
 import { usePatients } from "@/hooks/useDashboard";
+import { DemandeActions } from "@/components/consultation/DemandeActions";
 
 export const Route = createFileRoute("/dashboard/agenda")({
   component: AgendaPage,
@@ -25,12 +26,14 @@ function AgendaPage() {
   if (isLoading) return <LoadingState />;
 
   const items = data?.items ?? [];
+  const demandes = items.filter((c) => c.statut === "en_attente_validation");
+  const autres = items.filter((c) => c.statut !== "en_attente_validation");
 
   return (
     <div>
       <PageHeader
         title="Agenda"
-        description="Planning des consultations"
+        description="Demandes patients et consultations"
         action={
           <Link
             to="/dashboard/consultation/nouvelle"
@@ -41,11 +44,48 @@ function AgendaPage() {
         }
       />
 
-      {items.length === 0 ? (
-        <EmptyState message="Aucune consultation planifiée. Créez-en une nouvelle." />
-      ) : (
+      {demandes.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+            Demandes à valider ({demandes.length})
+          </h2>
+          <div className="space-y-3">
+            {demandes.map((c) => {
+              const patient = patientMap.get(c.patient_id);
+              const tel = c.patient_telephone ?? patient?.telephone;
+              const fromKiosque =
+                c.symptomes?.includes("[Kiosque]") || c.motif?.includes("[Kiosque]");
+              return (
+                <div key={c.id} className="p-4 rounded-xl surface border">
+                  {fromKiosque && (
+                    <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-artek-orange/15 text-artek-orange mb-2">
+                      Kiosque ASC
+                    </span>
+                  )}
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {tel ? formatPhone(tel) : "Patient"}
+                  </p>
+                  {(c.patient_nom || c.patient_prenom) && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {[c.patient_prenom, c.patient_nom].filter(Boolean).join(" ")}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {c.symptomes || c.motif}
+                  </p>
+                  <DemandeActions consultationId={c.id} />
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {autres.length === 0 && demandes.length === 0 ? (
+        <EmptyState message="Aucune consultation planifiée." />
+      ) : autres.length > 0 ? (
         <div className="space-y-3">
-          {items.map((c) => {
+          {autres.map((c) => {
             const patient = patientMap.get(c.patient_id);
             return (
               <div
@@ -83,7 +123,7 @@ function AgendaPage() {
             );
           })}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

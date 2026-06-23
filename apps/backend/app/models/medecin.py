@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from app.database import Base
 
@@ -17,3 +18,5 @@ class Medecin(Base):
     pin_hash = Column(String(255))
     disponible = Column(Boolean, default=True)
     est_actif = Column(Boolean, default=True)
+
+    patients = relationship("Patient", back_populates="medecin")

@@ -16,8 +16,12 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   hydrated: false,
 
   hydrate: async () => {
-    const value = await SecureStore.getItemAsync(KEY);
-    set({ completed: value === "true", hydrated: true });
+    try {
+      const value = await SecureStore.getItemAsync(KEY);
+      set({ completed: value === "true", hydrated: true });
+    } catch {
+      set({ hydrated: true });
+    }
   },
 
   complete: async () => {

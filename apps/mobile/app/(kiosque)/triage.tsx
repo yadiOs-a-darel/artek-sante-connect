@@ -1,15 +1,48 @@
 import { useState } from "react";
-import { Text, StyleSheet, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Screen, Button } from "@/components/ui";
-import { colors } from "@/constants/theme";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { useTheme } from "@/providers/ThemeProvider";
 
 const SYMPTOMES = ["Fièvre", "Maux de tête", "Toux", "Douleurs", "Grossesse", "Autre"];
 
 export default function KiosqueTriage() {
-  const { telephone } = useLocalSearchParams<{ telephone: string }>();
+  const { colors } = useTheme();
+  const { telephone, kiosqueId } = useLocalSearchParams<{
+    telephone: string;
+    kiosqueId?: string;
+  }>();
   const [motif, setMotif] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+
+  const styles = useThemedStyles((c) => ({
+    label: { fontSize: 14, color: c.textMuted, marginBottom: 8, marginTop: 8 },
+    chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+    chip: {
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: c.chipBg,
+      color: c.text,
+      overflow: "hidden",
+    },
+    chipActive: {
+      backgroundColor: c.successBg,
+      color: c.green,
+      fontWeight: "600",
+    },
+    input: {
+      backgroundColor: c.inputBg,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 12,
+      padding: 14,
+      minHeight: 80,
+      textAlignVertical: "top",
+      color: c.text,
+    },
+  }));
 
   const toggle = (s: string) => {
     setSelected((prev) =>
@@ -21,7 +54,7 @@ export default function KiosqueTriage() {
     const fullMotif = [motif, ...selected].filter(Boolean).join(", ") || "Consultation kiosque";
     router.push({
       pathname: "/(kiosque)/mesures",
-      params: { telephone, motif: fullMotif },
+      params: { telephone, motif: fullMotif, kiosqueId: kiosqueId || "kiosk-bangui-01" },
     });
   };
 
@@ -43,6 +76,7 @@ export default function KiosqueTriage() {
       <TextInput
         style={styles.input}
         placeholder="Décrivez les symptômes..."
+        placeholderTextColor={colors.textMuted}
         multiline
         value={motif}
         onChangeText={setMotif}
@@ -51,31 +85,3 @@ export default function KiosqueTriage() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  label: { fontSize: 14, color: colors.textMuted, marginBottom: 8, marginTop: 8 },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#E5E7EB",
-    color: colors.text,
-    overflow: "hidden",
-  },
-  chipActive: {
-    backgroundColor: "#D1FAE5",
-    color: colors.green,
-    fontWeight: "600",
-  },
-  input: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 14,
-    minHeight: 80,
-    textAlignVertical: "top",
-    color: colors.text,
-  },
-});

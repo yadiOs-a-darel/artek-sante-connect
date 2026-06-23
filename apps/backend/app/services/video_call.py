@@ -13,6 +13,10 @@ def _extract_meet_code(url: str) -> str:
     return ""
 
 
+def _is_invalid_meet_url(url: str) -> bool:
+    return url.rstrip("/").endswith("/new")
+
+
 async def prepare_video_session(
     consultation: Consultation,
     db: AsyncSession,
@@ -21,6 +25,10 @@ async def prepare_video_session(
     is_owner: bool = True,
 ) -> dict:
     del user_name, is_owner  # réservé pour invitations Calendar futures
+
+    if consultation.salle_video_url and _is_invalid_meet_url(consultation.salle_video_url):
+        consultation.salle_video_url = None
+        await db.flush()
 
     if consultation.salle_video_url:
         meet_url = consultation.salle_video_url

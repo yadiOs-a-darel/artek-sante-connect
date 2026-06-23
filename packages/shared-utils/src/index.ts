@@ -10,9 +10,12 @@ export function formatPhoneRCA(phone: string): string {
   return `+236 ${normalized}`;
 }
 
+/** Orange RCA : préfixes 72, 73, 74 (Moov 70, Telecel 75, Nationlink 77) */
+export const ORANGE_RCA_PHONE_REGEX = /^7[234]\d{6}$/;
+
 export function isValidOrangePhone(phone: string): boolean {
   const normalized = normalizePhoneRCA(phone);
-  return /^7\d{7}$/.test(normalized);
+  return ORANGE_RCA_PHONE_REGEX.test(normalized);
 }
 
 export function formatCFA(amount: number): string {

@@ -1,21 +1,49 @@
 import { useState } from "react";
-import { TextInput, Text, StyleSheet, Alert, View } from "react-native";
-import { router } from "expo-router";
+import { TextInput, Text, Alert, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { isValidOrangePhone } from "@artek/shared-utils";
 import { Screen, Button } from "@/components/ui";
-import { colors } from "@/constants/theme";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
+import { useTheme } from "@/providers/ThemeProvider";
 
 export default function KiosquePatient() {
+  const { colors } = useTheme();
+  const { kiosqueId } = useLocalSearchParams<{ kiosqueId?: string }>();
   const [telephone, setTelephone] = useState("");
+  const kiosk = kiosqueId || "kiosk-bangui-01";
+
+  const styles = useThemedStyles((c) => ({
+    label: { fontSize: 14, color: c.textMuted, marginBottom: 8 },
+    row: { flexDirection: "row", alignItems: "center", gap: 8 },
+    prefix: {
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      backgroundColor: c.chipBg,
+      borderRadius: 12,
+      color: c.textMuted,
+      fontWeight: "600",
+    },
+    input: {
+      flex: 1,
+      backgroundColor: c.inputBg,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 18,
+      color: c.text,
+    },
+  }));
 
   const handleNext = () => {
     if (!isValidOrangePhone(telephone)) {
-      Alert.alert("Numéro invalide", "Entrez le numéro Orange du patient (7XXXXXXX)");
+      Alert.alert("Numéro invalide", "Entrez le numéro Orange du patient (72, 73 ou 74…)");
       return;
     }
     router.push({
       pathname: "/(kiosque)/triage",
-      params: { telephone },
+      params: { telephone, kiosqueId: kiosk },
     });
   };
 
@@ -26,7 +54,8 @@ export default function KiosquePatient() {
         <Text style={styles.prefix}>+236</Text>
         <TextInput
           style={styles.input}
-          placeholder="77000001"
+          placeholder="72000001"
+          placeholderTextColor={colors.textMuted}
           keyboardType="phone-pad"
           maxLength={8}
           value={telephone}
@@ -37,27 +66,3 @@ export default function KiosquePatient() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  label: { fontSize: 14, color: colors.textMuted, marginBottom: 8 },
-  row: { flexDirection: "row", alignItems: "center", gap: 8 },
-  prefix: {
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    backgroundColor: "#E5E7EB",
-    borderRadius: 12,
-    color: colors.textMuted,
-    fontWeight: "600",
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 18,
-    color: colors.text,
-  },
-});

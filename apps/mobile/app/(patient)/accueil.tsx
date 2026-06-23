@@ -1,13 +1,101 @@
-import { Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { useMemo } from "react";
+import { Text, StyleSheet, ScrollView, RefreshControl, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { formatPhoneRCA } from "@artek/shared-utils";
 import type { Consultation } from "@artek/types";
-import { Screen, Card, Button } from "@/components/ui";
+import {
+  Card,
+  Button,
+  HeroBanner,
+  QuickAction,
+  StatusPill,
+} from "@/components/ui";
+import { useKiosques } from "@/hooks/useKiosques";
 import { api } from "@/lib/api";
-import { colors } from "@/constants/theme";
+import { useTheme } from "@/providers/ThemeProvider";
+
+const STATUT_TONE: Record<string, "green" | "orange" | "gray"> = {
+  en_attente_validation: "orange",
+  programmee: "green",
+  en_cours: "green",
+  en_attente: "orange",
+};
 
 export default function AccueilPatient() {
+  const { colors } = useTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        scroll: { flex: 1, backgroundColor: colors.green },
+        scrollContent: { flexGrow: 1, paddingBottom: 32 },
+        sheet: {
+          flex: 1,
+          backgroundColor: colors.bg,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          marginTop: -16,
+          paddingHorizontal: 20,
+          paddingTop: 24,
+        },
+        quickRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
+        featureCard: {
+          borderColor: `${colors.green}40`,
+          backgroundColor: colors.card,
+        },
+        sectionLabel: {
+          fontSize: 11,
+          fontWeight: "700",
+          color: colors.green,
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+          marginBottom: 6,
+        },
+        cardTitle: {
+          fontSize: 18,
+          fontWeight: "700",
+          color: colors.text,
+          marginBottom: 8,
+          lineHeight: 24,
+        },
+        cardText: {
+          fontSize: 14,
+          color: colors.textMuted,
+          lineHeight: 21,
+          marginBottom: 4,
+        },
+        kioskHeader: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 12,
+        },
+        kioskIcon: { fontSize: 28 },
+        kioskRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 10,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          gap: 10,
+        },
+        kioskDot: {
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: colors.green,
+        },
+        kioskInfo: { flex: 1 },
+        kioskName: { fontSize: 15, fontWeight: "600", color: colors.text },
+        kioskMeta: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+        kioskStatus: { fontSize: 11, fontWeight: "600" },
+        online: { color: colors.green },
+        offline: { color: colors.danger },
+      }),
+    [colors]
+  );
+
   const { data: profile, refetch: refetchProfile, isFetching: loadingProfile } = useQuery({
     queryKey: ["patient-me"],
     queryFn: async () => {
@@ -25,14 +113,19 @@ export default function AccueilPatient() {
       },
     });
 
-  const prochaine = consultations?.items?.find(
-    (c: Consultation) => c.statut === "en_attente" || c.statut === "en_cours"
+  const { data: kiosques } = useKiosques();
+
+  const active = consultations?.items?.find((c: Consultation & { statut: string }) =>
+    ["en_attente_validation", "programmee", "en_attente", "en_cours"].includes(c.statut)
   );
+
+  const kiosquesActifs = kiosques?.filter((k) => k.statut === "actif").length ?? 0;
 
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={loadingProfile || loadingConsultations}
@@ -41,76 +134,115 @@ export default function AccueilPatient() {
             refetchConsultations();
           }}
           colors={[colors.green]}
+          tintColor={colors.green}
         />
       }
     >
-      <Screen
-        title={`Bonjour${profile?.prenom ? `, ${profile.prenom}` : ""}`}
-        subtitle={profile ? formatPhoneRCA(profile.telephone) : "Chargement..."}
-      >
-        {prochaine ? (
-          <Card>
-            <Text style={styles.cardTitle}>Prochaine consultation</Text>
-            <Text style={styles.cardText}>{prochaine.motif || "Consultation vidéo"}</Text>
-            <Text style={styles.badge}>{prochaine.statut.replace("_", " ")}</Text>
+      <HeroBanner
+        emoji="👋"
+        greeting={`Bonjour${profile?.prenom ? `, ${profile.prenom}` : ""}`}
+        line2={profile ? formatPhoneRCA(profile.telephone) : "Chargement..."}
+      />
+
+      <View style={styles.sheet}>
+        <View style={styles.quickRow}>
+          <QuickAction
+            icon="🩺"
+            label="Consultation"
+            onPress={() => router.push("/(patient)/demande/nouvelle")}
+          />
+          <QuickAction
+            icon="📋"
+            label="Ordonnances"
+            color={colors.blue}
+            onPress={() => router.push("/(patient)/ordonnances")}
+          />
+          <QuickAction
+            icon="☀️"
+            label="Kiosques"
+            color={colors.orange}
+            onPress={() => router.push("/(patient)/kiosques")}
+          />
+        </View>
+
+        {active ? (
+          <Card style={styles.featureCard}>
+            <Text style={styles.sectionLabel}>Consultation en cours</Text>
+            <Text style={styles.cardTitle} numberOfLines={2}>
+              {active.motif || active.symptomes || "Téléconsultation"}
+            </Text>
+            <StatusPill
+              label={active.statut.replace(/_/g, " ")}
+              tone={STATUT_TONE[active.statut] ?? "gray"}
+            />
             <Button
-              label="Rejoindre"
+              label="Voir le détail"
               onPress={() =>
                 router.push({
                   pathname: "/(patient)/consultation/[id]",
-                  params: { id: prochaine.id },
+                  params: { id: active.id },
                 })
               }
             />
           </Card>
         ) : (
-          <Card>
-            <Text style={styles.cardText}>Aucune consultation en cours.</Text>
+          <Card style={styles.featureCard}>
+            <Text style={styles.sectionLabel}>Première étape</Text>
+            <Text style={styles.cardTitle}>Besoin d&apos;un médecin ?</Text>
+            <Text style={styles.cardText}>
+              Décrivez vos symptômes, saisissez vos constantes et choisissez un spécialiste.
+            </Text>
             <Button
-              label="Voir les consultations"
-              variant="outline"
-              onPress={() => router.push("/(patient)/consultation")}
+              label="Nouvelle demande"
+              onPress={() => router.push("/(patient)/demande/nouvelle")}
             />
           </Card>
         )}
 
         <Card>
-          <Text style={styles.cardTitle}>Mes ordonnances</Text>
-          <Text style={styles.cardText}>Consultez vos ordonnances numériques et QR codes.</Text>
+          <View style={styles.kioskHeader}>
+            <View>
+              <Text style={styles.sectionLabel}>Kiosques solaires ASC</Text>
+              <Text style={styles.cardText}>
+                {kiosquesActifs} point{kiosquesActifs !== 1 ? "s" : ""} actif
+                {kiosquesActifs !== 1 ? "s" : ""} près de vous
+              </Text>
+            </View>
+            <Text style={styles.kioskIcon}>☀️</Text>
+          </View>
+          {kiosques?.slice(0, 2).map((k) => (
+            <View key={k.id} style={styles.kioskRow}>
+              <View style={styles.kioskDot} />
+              <View style={styles.kioskInfo}>
+                <Text style={styles.kioskName}>{k.prefecture}</Text>
+                <Text style={styles.kioskMeta}>
+                  {k.village ?? "—"} · Batterie {k.batterie_pct}%
+                </Text>
+              </View>
+              <Text style={[styles.kioskStatus, k.connexion_ok ? styles.online : styles.offline]}>
+                {k.connexion_ok ? "En ligne" : "Hors ligne"}
+              </Text>
+            </View>
+          ))}
           <Button
-            label="Ouvrir"
-            variant="secondary"
-            onPress={() => router.push("/(patient)/ordonnances")}
+            label="Voir tous les kiosques"
+            variant="outline"
+            onPress={() => router.push("/(patient)/kiosques")}
           />
         </Card>
-      </Screen>
+
+        <Card>
+          <Text style={styles.sectionLabel}>Mode kiosque</Text>
+          <Text style={styles.cardText}>
+            Sur place dans un centre ASC ? Lancez le parcours guidé (identification, triage, mesures).
+          </Text>
+          <Button
+            label="Ouvrir le mode kiosque"
+            variant="secondary"
+            onPress={() => router.push("/(kiosque)/accueil")}
+          />
+        </Card>
+      </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { flexGrow: 1 },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 6,
-  },
-  cardText: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginBottom: 8,
-  },
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#D1FAE5",
-    color: colors.green,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: "600",
-    overflow: "hidden",
-  },
-});

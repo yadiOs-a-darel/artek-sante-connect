@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   ViewStyle,
 } from "react-native";
-import { colors } from "@/constants/theme";
+import { useTheme } from "@/providers/ThemeProvider";
 
 export function Screen({
   children,
@@ -17,10 +17,13 @@ export function Screen({
   title?: string;
   subtitle?: string;
 }) {
+  const { colors } = useTheme();
   return (
-    <View style={styles.screen}>
-      {title && <Text style={styles.title}>{title}</Text>}
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+    <View style={[styles.screen, { backgroundColor: colors.bg }]}>
+      {title ? <Text style={[styles.title, { color: colors.text }]}>{title}</Text> : null}
+      {subtitle ? (
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>{subtitle}</Text>
+      ) : null}
       {children}
     </View>
   );
@@ -36,17 +39,21 @@ export function Button({
 }: {
   label: string;
   onPress: () => void;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "primary" | "secondary" | "outline" | "danger";
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
 }) {
+  const { colors } = useTheme();
+
   const variantStyle =
     variant === "primary"
-      ? styles.btnPrimary
+      ? { backgroundColor: colors.green }
       : variant === "secondary"
-        ? styles.btnSecondary
-        : styles.btnOutline;
+        ? { backgroundColor: colors.secondaryBtn }
+        : variant === "danger"
+          ? { backgroundColor: colors.danger }
+          : { backgroundColor: "transparent", borderWidth: 1, borderColor: colors.green };
 
   return (
     <TouchableOpacity
@@ -55,13 +62,16 @@ export function Button({
       style={[styles.btn, variantStyle, disabled && styles.btnDisabled, style]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "outline" ? colors.green : "#fff"} />
+        <ActivityIndicator
+          color={variant === "outline" || variant === "danger" ? colors.green : "#fff"}
+        />
       ) : (
         <Text
           style={[
             styles.btnText,
             variant === "outline" && { color: colors.green },
             variant === "secondary" && { color: colors.text },
+            variant === "danger" && { color: "#fff" },
           ]}
         >
           {label}
@@ -71,25 +81,36 @@ export function Button({
   );
 }
 
-export function Card({ children }: { children: React.ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
+export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.card, borderColor: colors.border },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
 }
+
+export { MobilePage, HeroBanner, QuickAction, StatusPill } from "./layout";
+export { ThemeSelector } from "./ThemeSelector";
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.bg,
     padding: 20,
   },
   title: {
     fontSize: 26,
     fontWeight: "700",
-    color: colors.text,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textMuted,
     marginBottom: 20,
   },
   btn: {
@@ -98,17 +119,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 12,
-  },
-  btnPrimary: {
-    backgroundColor: colors.green,
-  },
-  btnSecondary: {
-    backgroundColor: "#E5E7EB",
-  },
-  btnOutline: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: colors.green,
   },
   btnDisabled: {
     opacity: 0.5,
@@ -119,11 +129,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   card: {
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    alignSelf: "stretch",
+    width: "100%",
   },
 });

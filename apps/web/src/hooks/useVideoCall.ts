@@ -21,6 +21,7 @@ export function useVideoCall(consultationId: string, enabled = true) {
     },
     enabled: !!consultationId && enabled,
     retry: 1,
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchOnMount: "always",
   });
 }

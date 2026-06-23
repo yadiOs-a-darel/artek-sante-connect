@@ -8,17 +8,20 @@ Application React Native **Expo SDK 54** + **Expo Router** pour les patients et 
 # Depuis la racine du monorepo
 pnpm install
 
-# Ajouter dans .env à la racine :
-# EXPO_PUBLIC_API_URL=http://localhost:8000
-# Sur appareil physique : utilisez l'IP LAN de votre PC (ex. http://192.168.1.10:8000)
+# .env à la racine :
+# EXPO_PUBLIC_API_URL=http://192.168.0.103:8000  (IP LAN du PC)
 
 cd apps/mobile
-pnpm start
+pnpm start:lan -- -c
 ```
 
-Scannez le QR code avec **Expo Go** (SDK 54+) ou lancez un émulateur (`a` / `i`).
+Scannez le QR code avec **Expo Go** (SDK 54+). PC et téléphone sur le **même Wi‑Fi**.
 
-> Si vous voyez une erreur de version Expo Go, relancez avec cache vidé : `pnpm start -- -c`
+`start:lan` active `EXPO_OFFLINE=1` pour éviter l'erreur `TypeError: fetch failed` quand Expo ne peut pas joindre expo.dev (pas d'Internet ou pare-feu). Le bundler LAN fonctionne normalement.
+
+Si le téléphone ne se connecte pas au QR LAN : `pnpm start:tunnel -- -c` (nécessite Internet).
+
+> `pnpm start:offline -- -c` : mode localhost uniquement (sans `--lan`).
 
 ## Structure
 
@@ -35,7 +38,7 @@ Après `./scripts/seed-db.sh` :
 
 | Champ | Valeur |
 |-------|--------|
-| Téléphone | `77000001` |
+| Téléphone | `72000001` |
 | OTP (dev) | `000000` |
 
 ## API mobile

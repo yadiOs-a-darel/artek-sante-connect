@@ -36,6 +36,16 @@ class OrdonnanceUpdate(BaseModel):
     instructions: Optional[str] = None
 
 
+class OrdonnanceVerifyResponse(BaseModel):
+    valide: bool
+    qr_code: str
+    medecin_nom: Optional[str] = None
+    patient_initiales: Optional[str] = None
+    medicaments: list[Any]
+    instructions: Optional[str] = None
+    message: Optional[str] = None
+
+
 class OrdonnanceListResponse(BaseModel):
     items: list[OrdonnanceResponse]
     total: int

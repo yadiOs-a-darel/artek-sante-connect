@@ -41,6 +41,9 @@ export function StatCard({ label, value, icon: Icon, color = "text-artek-green" 
 }
 
 const STATUT_STYLES: Record<string, string> = {
+  en_attente_validation: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+  refusee: "bg-red-500/20 text-red-600 dark:text-red-400",
+  programmee: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
   en_attente: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
   en_cours: "bg-artek-green/20 text-artek-green",
   terminee: "bg-gray-500/20 text-gray-600 dark:text-gray-400",

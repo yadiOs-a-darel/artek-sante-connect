@@ -16,5 +16,11 @@
   "packageManager": "pnpm@8.15.0",
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "~19.1.10",
+      "@types/react-dom": "~19.1.0"
+    }
   }
 }

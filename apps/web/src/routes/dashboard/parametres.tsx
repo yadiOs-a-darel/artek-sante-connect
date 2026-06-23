@@ -144,11 +144,6 @@ function ProfilTab() {
         <div className="p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">{error}</div>
       )}
 
-      <div className="p-4 rounded-xl surface border">
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Identifiant médecin</p>
-        <p className="font-mono text-sm text-artek-green break-all">{profile?.id}</p>
-      </div>
-
       <div className="grid lg:grid-cols-2 gap-4">
         <form
           onSubmit={(e) => {

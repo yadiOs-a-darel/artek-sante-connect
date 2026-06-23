@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,14 +15,53 @@ from app.security.jwt import hash_pin, verify_pin
 
 router = APIRouter(prefix="/medecins")
 
+SPECIALITES = [
+    "Médecine générale",
+    "Pédiatrie",
+    "Gynécologie-obstétrique",
+    "Chirurgie générale",
+    "Cardiologie",
+    "Dermatologie",
+    "Ophtalmologie",
+    "ORL",
+    "Psychiatrie",
+    "Autre",
+]
+
+
+def _medecin_response(medecin: Medecin) -> MedecinResponse:
+    return MedecinResponse(
+        id=medecin.id,
+        nom=medecin.nom_chiffre,
+        specialite=medecin.specialite,
+        prefecture=medecin.prefecture,
+        disponible=medecin.disponible,
+    )
+
+
+@router.get("/specialites", response_model=list[str])
+async def list_specialites():
+    return SPECIALITES
+
 
 @router.get("/disponibles", response_model=list[MedecinResponse])
-async def list_medecins_disponibles(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(Medecin).where(Medecin.disponible == True, Medecin.est_actif == True)
-    )
+async def list_medecins_disponibles(
+    db: AsyncSession = Depends(get_db),
+    specialite: str | None = Query(None),
+    prefecture: str | None = Query(None),
+    disponibles_seulement: bool = Query(False),
+):
+    query = select(Medecin).where(Medecin.est_actif == True)
+    if disponibles_seulement:
+        query = query.where(Medecin.disponible == True)
+    if specialite:
+        query = query.where(Medecin.specialite == specialite)
+    if prefecture:
+        query = query.where(Medecin.prefecture == prefecture)
+    query = query.order_by(Medecin.specialite, Medecin.nom_chiffre)
+    result = await db.execute(query)
     medecins = result.scalars().all()
-    return [MedecinResponse.model_validate(m) for m in medecins]
+    return [_medecin_response(m) for m in medecins]
 
 
 @router.get("/me", response_model=MedecinProfileResponse)

@@ -1,12 +1,22 @@
 import { useState } from "react";
-import { Text, StyleSheet } from "react-native";
+import { Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Screen, Card, Button } from "@/components/ui";
-import { colors } from "@/constants/theme";
+import { useThemedStyles } from "@/hooks/useThemedStyles";
 
 export default function KiosqueMesures() {
-  const { telephone, motif } = useLocalSearchParams<{ telephone: string; motif: string }>();
+  const { telephone, motif, kiosqueId } = useLocalSearchParams<{
+    telephone: string;
+    motif: string;
+    kiosqueId?: string;
+  }>();
   const [simulated, setSimulated] = useState(false);
+
+  const styles = useThemedStyles((colors) => ({
+    label: { fontSize: 13, color: colors.textMuted, marginTop: 8 },
+    value: { fontSize: 20, fontWeight: "600", color: colors.text },
+    hint: { fontSize: 12, color: colors.textMuted, marginTop: 16, lineHeight: 18 },
+  }));
 
   const simulateMeasures = () => {
     setSimulated(true);
@@ -18,6 +28,7 @@ export default function KiosqueMesures() {
       params: {
         telephone,
         motif: motif || "Consultation kiosque",
+        kiosqueId: kiosqueId || "kiosk-bangui-01",
         tension: simulated ? "120/80" : "",
         spo2: simulated ? "98" : "",
         temperature: simulated ? "36.8" : "",
@@ -49,9 +60,3 @@ export default function KiosqueMesures() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  label: { fontSize: 13, color: colors.textMuted, marginTop: 8 },
-  value: { fontSize: 20, fontWeight: "600", color: colors.text },
-  hint: { fontSize: 12, color: colors.textMuted, marginTop: 16, lineHeight: 18 },
-});

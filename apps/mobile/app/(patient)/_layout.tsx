@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@/constants/theme";
+import { useTheme } from "@/providers/ThemeProvider";
 
 export default function PatientLayout() {
+  const { colors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
@@ -10,9 +12,10 @@ export default function PatientLayout() {
         tabBarActiveTintColor: colors.green,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: colors.tabBar,
           borderTopColor: colors.border,
         },
+        sceneStyle: { backgroundColor: colors.bg },
       }}
     >
       <Tabs.Screen
@@ -55,6 +58,8 @@ export default function PatientLayout() {
         name="ordonnances"
         options={{ href: null }}
       />
+      <Tabs.Screen name="demande" options={{ href: null }} />
+      <Tabs.Screen name="kiosques" options={{ href: null }} />
     </Tabs>
   );
 }

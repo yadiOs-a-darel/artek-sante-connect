@@ -17,7 +17,12 @@ export default function BienvenueScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Button label="Je suis patient" onPress={() => router.push("/(auth)/telephone")} />
+        <Button
+          label="Créer un compte"
+          variant="outline"
+          onPress={() => router.push({ pathname: "/(auth)/telephone", params: { mode: "register" } })}
+        />
+        <Button label="Se connecter" onPress={() => router.push({ pathname: "/(auth)/telephone", params: { mode: "login" } })} />
         <Button
           label="Mode kiosque ASC"
           variant="outline"

@@ -43,18 +43,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   hydrate: async () => {
-    const [accessToken, refreshToken, role, telephone] = await Promise.all([
-      SecureStore.getItemAsync(KEYS.access),
-      SecureStore.getItemAsync(KEYS.refresh),
-      SecureStore.getItemAsync(KEYS.role),
-      SecureStore.getItemAsync(KEYS.telephone),
-    ]);
-    set({
-      accessToken,
-      refreshToken,
-      role,
-      telephone,
-      hydrated: true,
-    });
+    try {
+      const [accessToken, refreshToken, role, telephone] = await Promise.all([
+        SecureStore.getItemAsync(KEYS.access),
+        SecureStore.getItemAsync(KEYS.refresh),
+        SecureStore.getItemAsync(KEYS.role),
+        SecureStore.getItemAsync(KEYS.telephone),
+      ]);
+      set({ accessToken, refreshToken, role, telephone, hydrated: true });
+    } catch {
+      set({ hydrated: true });
+    }
   },
 }));

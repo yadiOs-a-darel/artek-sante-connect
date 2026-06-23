@@ -9,12 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifierRouteImport } from './routes/verifier'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRapportsRouteImport } from './routes/dashboard/rapports'
 import { Route as DashboardParametresRouteImport } from './routes/dashboard/parametres'
+import { Route as DashboardKiosquesRouteImport } from './routes/dashboard/kiosques'
 import { Route as DashboardAgendaRouteImport } from './routes/dashboard/agenda'
 import { Route as DashboardAccueilRouteImport } from './routes/dashboard/accueil'
 import { Route as AdminKiosquesRouteImport } from './routes/admin/kiosques'
@@ -24,6 +26,11 @@ import { Route as DashboardPatientsIdRouteImport } from './routes/dashboard/pati
 import { Route as DashboardConsultationNouvelleRouteImport } from './routes/dashboard/consultation/nouvelle'
 import { Route as DashboardConsultationIdRouteImport } from './routes/dashboard/consultation/$id'
 
+const VerifierRoute = VerifierRouteImport.update({
+  id: '/verifier',
+  path: '/verifier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -52,6 +59,11 @@ const DashboardRapportsRoute = DashboardRapportsRouteImport.update({
 const DashboardParametresRoute = DashboardParametresRouteImport.update({
   id: '/parametres',
   path: '/parametres',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardKiosquesRoute = DashboardKiosquesRouteImport.update({
+  id: '/kiosques',
+  path: '/kiosques',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardAgendaRoute = DashboardAgendaRouteImport.update({
@@ -102,9 +114,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/verifier': typeof VerifierRoute
   '/admin/kiosques': typeof AdminKiosquesRoute
   '/dashboard/accueil': typeof DashboardAccueilRoute
   '/dashboard/agenda': typeof DashboardAgendaRoute
+  '/dashboard/kiosques': typeof DashboardKiosquesRoute
   '/dashboard/parametres': typeof DashboardParametresRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/consultation/$id': typeof DashboardConsultationIdRoute
@@ -118,9 +132,11 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/verifier': typeof VerifierRoute
   '/admin/kiosques': typeof AdminKiosquesRoute
   '/dashboard/accueil': typeof DashboardAccueilRoute
   '/dashboard/agenda': typeof DashboardAgendaRoute
+  '/dashboard/kiosques': typeof DashboardKiosquesRoute
   '/dashboard/parametres': typeof DashboardParametresRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/consultation/$id': typeof DashboardConsultationIdRoute
@@ -135,9 +151,11 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/verifier': typeof VerifierRoute
   '/admin/kiosques': typeof AdminKiosquesRoute
   '/dashboard/accueil': typeof DashboardAccueilRoute
   '/dashboard/agenda': typeof DashboardAgendaRoute
+  '/dashboard/kiosques': typeof DashboardKiosquesRoute
   '/dashboard/parametres': typeof DashboardParametresRoute
   '/dashboard/rapports': typeof DashboardRapportsRoute
   '/dashboard/consultation/$id': typeof DashboardConsultationIdRoute
@@ -153,9 +171,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/login'
+    | '/verifier'
     | '/admin/kiosques'
     | '/dashboard/accueil'
     | '/dashboard/agenda'
+    | '/dashboard/kiosques'
     | '/dashboard/parametres'
     | '/dashboard/rapports'
     | '/dashboard/consultation/$id'
@@ -169,9 +189,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/login'
+    | '/verifier'
     | '/admin/kiosques'
     | '/dashboard/accueil'
     | '/dashboard/agenda'
+    | '/dashboard/kiosques'
     | '/dashboard/parametres'
     | '/dashboard/rapports'
     | '/dashboard/consultation/$id'
@@ -185,9 +207,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/login'
+    | '/verifier'
     | '/admin/kiosques'
     | '/dashboard/accueil'
     | '/dashboard/agenda'
+    | '/dashboard/kiosques'
     | '/dashboard/parametres'
     | '/dashboard/rapports'
     | '/dashboard/consultation/$id'
@@ -202,10 +226,18 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
+  VerifierRoute: typeof VerifierRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verifier': {
+      id: '/verifier'
+      path: '/verifier'
+      fullPath: '/verifier'
+      preLoaderRoute: typeof VerifierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -246,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/parametres'
       fullPath: '/dashboard/parametres'
       preLoaderRoute: typeof DashboardParametresRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/kiosques': {
+      id: '/dashboard/kiosques'
+      path: '/kiosques'
+      fullPath: '/dashboard/kiosques'
+      preLoaderRoute: typeof DashboardKiosquesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/agenda': {
@@ -320,6 +359,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface DashboardRouteChildren {
   DashboardAccueilRoute: typeof DashboardAccueilRoute
   DashboardAgendaRoute: typeof DashboardAgendaRoute
+  DashboardKiosquesRoute: typeof DashboardKiosquesRoute
   DashboardParametresRoute: typeof DashboardParametresRoute
   DashboardRapportsRoute: typeof DashboardRapportsRoute
   DashboardConsultationIdRoute: typeof DashboardConsultationIdRoute
@@ -332,6 +372,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAccueilRoute: DashboardAccueilRoute,
   DashboardAgendaRoute: DashboardAgendaRoute,
+  DashboardKiosquesRoute: DashboardKiosquesRoute,
   DashboardParametresRoute: DashboardParametresRoute,
   DashboardRapportsRoute: DashboardRapportsRoute,
   DashboardConsultationIdRoute: DashboardConsultationIdRoute,
@@ -350,6 +391,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
+  VerifierRoute: VerifierRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

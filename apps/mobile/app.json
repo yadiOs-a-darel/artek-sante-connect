@@ -22,7 +22,16 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#00A651"
       },
-      "package": "cf.artek.connectsante"
+      "package": "cf.artek.connectsante",
+      "queries": [
+        { "package": "com.google.android.apps.tachyon" },
+        {
+          "intent": {
+            "action": "VIEW",
+            "data": [{ "scheme": "https", "host": "meet.google.com" }]
+          }
+        }
+      ]
     },
     "web": {
       "bundler": "metro",

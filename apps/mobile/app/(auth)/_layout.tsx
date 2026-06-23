@@ -6,6 +6,7 @@ export default function AuthLayout() {
       <Stack.Screen name="bienvenue" />
       <Stack.Screen name="telephone" />
       <Stack.Screen name="otp" />
+      <Stack.Screen name="inscription" />
     </Stack>
   );
 }

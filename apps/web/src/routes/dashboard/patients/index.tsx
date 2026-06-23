@@ -7,9 +7,11 @@ import {
   LoadingState,
   EmptyState,
 } from "@/components/ui/dashboard";
+import { PatientEditForm } from "@/components/patient/PatientEditForm";
 import { usePatients } from "@/hooks/useDashboard";
 import { api } from "@/lib/api";
 import { formatPhone } from "@/lib/utils";
+import { RCA_PREFECTURES } from "@/constants/rca";
 
 export const Route = createFileRoute("/dashboard/patients/")({
   component: PatientsPage,
@@ -73,20 +75,25 @@ function PatientsPage() {
           className="mb-6 p-5 rounded-xl surface border grid sm:grid-cols-2 gap-4"
         >
           <input
-            placeholder="Téléphone (7XXXXXXX)"
+            placeholder="Téléphone Orange (72… 73… 74…)"
             value={form.telephone}
             onChange={(e) => setForm({ ...form, telephone: e.target.value })}
             className="input-field"
             required
-            pattern="7\d{7}"
+            pattern="7[234]\d{6}"
           />
-          <input
-            placeholder="Préfecture"
+          <select
             value={form.prefecture}
             onChange={(e) => setForm({ ...form, prefecture: e.target.value })}
             className="input-field"
             required
-          />
+          >
+            {RCA_PREFECTURES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
           <input
             placeholder="Nom"
             value={form.nom}
@@ -126,21 +133,22 @@ function PatientsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((p) => (
-            <Link
-              key={p.id}
-              to="/dashboard/patients/$id"
-              params={{ id: p.id }}
-              className="list-row hover:border-artek-green/50"
-            >
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">{formatPhone(p.telephone)}</span>
+            <div key={p.id} className="list-row flex-col sm:flex-row sm:items-center gap-3">
+              <Link
+                to="/dashboard/patients/$id"
+                params={{ id: p.id }}
+                className="flex-1 min-w-0 hover:opacity-80"
+              >
+                <span className="font-medium text-gray-900 dark:text-white">
+                  {p.prenom} {p.nom} — {formatPhone(p.telephone)}
+                </span>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {p.prefecture}
                   {p.village && ` · ${p.village}`}
                 </p>
-              </div>
-              <span className="text-artek-green text-sm">Voir fiche →</span>
-            </Link>
+              </Link>
+              <PatientEditForm patient={p} compact />
+            </div>
           ))}
         </div>
       )}

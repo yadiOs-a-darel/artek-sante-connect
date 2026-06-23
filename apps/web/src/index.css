@@ -43,14 +43,29 @@
     @apply p-4 rounded-lg bg-gray-100 border border-gray-200 hover:border-gray-300 transition text-center text-gray-900
       dark:bg-gray-800 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-100;
   }
-  .consultation-shell {
-    @apply flex h-[calc(100vh-8rem)] -m-6 rounded-xl overflow-hidden border surface;
+  .consultation-layout {
+    @apply flex flex-col min-h-0 h-[calc(100vh-9rem)];
+  }
+  .consultation-grid {
+    @apply flex flex-1 gap-5 min-h-0;
+  }
+  .consultation-main {
+    @apply flex flex-1 flex-col min-w-0 gap-4 p-4 md:p-5 rounded-2xl surface border shadow-sm overflow-hidden;
+  }
+  .consultation-aside {
+    @apply w-80 shrink-0 flex flex-col gap-4 overflow-y-auto pr-1;
+  }
+  .consultation-tabs {
+    @apply flex flex-wrap gap-3 p-1 md:p-2 -mx-1;
   }
   .consultation-panel {
     @apply bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800;
   }
   .call-stage {
-    @apply w-full h-full bg-gray-200 dark:bg-gray-950;
+    @apply w-full h-full rounded-xl bg-gray-100 dark:bg-gray-950/80;
+  }
+  .page-stack {
+    @apply flex flex-col gap-6 md:gap-8;
   }
   .call-stage-active {
     @apply w-full h-full bg-black;

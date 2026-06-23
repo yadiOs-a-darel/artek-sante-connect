@@ -1,9 +1,10 @@
 import enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String, Text
+import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-import uuid
 
 from app.database import Base
 
@@ -18,6 +19,12 @@ class Patient(Base):
     __tablename__ = "patients"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    medecin_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("medecins.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     telephone = Column(String(20), unique=True, nullable=False, index=True)
     nom_chiffre = Column(Text, nullable=False)
     prenom_chiffre = Column(Text, nullable=False)
@@ -33,6 +40,7 @@ class Patient(Base):
     abonnement_famille_actif = Column(Boolean, default=False)
     abonnement_expire_le = Column(DateTime)
 
+    medecin = relationship("Medecin", back_populates="patients")
     consultations = relationship("Consultation", back_populates="patient")
     dossier_medical = relationship("DossierMedical", back_populates="patient", uselist=False)
     mesures_vitales = relationship("MesureVitale", back_populates="patient")

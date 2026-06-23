@@ -1,11 +1,17 @@
+import { useMemo } from "react";
 import { Text, StyleSheet, ScrollView, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { formatPhoneRCA } from "@artek/shared-utils";
-import { Screen, Card } from "@/components/ui";
+import { MobilePage, Card } from "@/components/ui";
 import { api } from "@/lib/api";
-import { colors } from "@/constants/theme";
+import { useTheme } from "@/providers/ThemeProvider";
+import type { AppColors } from "@/constants/theme";
 
 export default function DossierScreen() {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ["patient-me"],
     queryFn: async () => {
@@ -15,51 +21,72 @@ export default function DossierScreen() {
   });
 
   return (
-    <ScrollView style={styles.scroll}>
-      <Screen title="Dossier médical" subtitle="Vos informations de santé">
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <MobilePage title="Dossier médical" subtitle="Vos informations de santé">
         {isLoading ? (
           <Text style={styles.muted}>Chargement...</Text>
         ) : profile ? (
-          <Card>
-            <Row label="Nom" value={`${profile.prenom} ${profile.nom}`} />
-            <Row label="Téléphone" value={formatPhoneRCA(profile.telephone)} />
-            <Row label="Préfecture" value={profile.prefecture} />
-            {profile.village && <Row label="Village" value={profile.village} />}
-            <Row label="Langue" value={profile.langue_preferee === "sg" ? "Sango" : "Français"} />
+          <Card style={styles.infoCard}>
+            <Row label="Nom" value={`${profile.prenom} ${profile.nom}`} colors={colors} />
+            <Row label="Téléphone" value={formatPhoneRCA(profile.telephone)} colors={colors} />
+            <Row label="Préfecture" value={profile.prefecture} colors={colors} />
+            {profile.village ? (
+              <Row label="Village" value={profile.village} colors={colors} />
+            ) : null}
+            <Row
+              label="Langue"
+              value={profile.langue_preferee === "sg" ? "Sango" : "Français"}
+              colors={colors}
+            />
           </Card>
         ) : null}
         <Card>
           <Text style={styles.cardTitle}>Historique complet</Text>
           <Text style={styles.muted}>
-            Le dossier médical numérique détaillé (allergies, antécédents, mesures IoT) sera
-            enrichi dans une prochaine version.
+            Allergies, antécédents et mesures IoT depuis les kiosques seront ajoutés prochainement.
           </Text>
         </Card>
-      </Screen>
+      </MobilePage>
     </ScrollView>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  colors,
+}: {
+  label: string;
+  value: string;
+  colors: AppColors;
+}) {
   return (
-    <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+    <View style={[rowStyles.row, { borderBottomColor: colors.border }]}>
+      <Text style={[rowStyles.label, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[rowStyles.value, { color: colors.text }]}>{value}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  cardTitle: { fontSize: 16, fontWeight: "600", color: colors.text, marginBottom: 8 },
-  muted: { fontSize: 14, color: colors.textMuted, lineHeight: 22 },
+const rowStyles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingVertical: 10,
+    alignItems: "center",
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    gap: 12,
   },
-  label: { color: colors.textMuted, fontSize: 14 },
-  value: { color: colors.text, fontSize: 14, fontWeight: "500" },
+  label: { fontSize: 14, flex: 1 },
+  value: { fontSize: 14, fontWeight: "600", flex: 1, textAlign: "right" },
 });
+
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
+    scroll: { flex: 1, backgroundColor: colors.bg },
+    content: { flexGrow: 1, paddingBottom: 32 },
+    infoCard: { width: "100%" },
+    cardTitle: { fontSize: 16, fontWeight: "700", color: colors.text, marginBottom: 8 },
+    muted: { fontSize: 14, color: colors.textMuted, lineHeight: 22 },
+  });
+}

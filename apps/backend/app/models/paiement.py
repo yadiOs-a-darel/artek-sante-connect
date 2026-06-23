@@ -1,7 +1,9 @@
 import enum
 import uuid
 
-from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -35,12 +37,14 @@ class MesureVitale(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     patient_id = Column(UUID(as_uuid=True), ForeignKey("patients.id"))
+    consultation_id = Column(UUID(as_uuid=True), ForeignKey("consultations.id"), nullable=True)
     tension_sys = Column(Float)
     tension_dia = Column(Float)
     spo2 = Column(Float)
     temperature = Column(Float)
     frequence_cardiaque = Column(Integer)
-    source = Column(String(50), default="kiosque")
+    source = Column(String(50), default="mobile")
+    mesure_le = Column(DateTime, default=datetime.utcnow)
 
     patient = relationship("Patient", back_populates="mesures_vitales")
 

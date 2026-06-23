@@ -7,6 +7,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.config import settings
 from app.database import Base, engine
+from app.migrations import run_light_migrations
 from app.routers import (
     auth,
     consultations,
@@ -31,8 +32,17 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await run_light_migrations(conn)
         app.state.db_ready = True
         logger.info("PostgreSQL connecté — tables initialisées")
+        if (
+            not settings.GOOGLE_MEET_DEV_URL.strip()
+            and settings.GOOGLE_SERVICE_ACCOUNT_JSON.strip() in ("", "{}")
+        ):
+            logger.warning(
+                "GOOGLE_MEET_DEV_URL non configuré — définissez un lien Meet dans .env "
+                "(ex. GOOGLE_MEET_DEV_URL=https://meet.google.com/abc-defg-hij) puis redémarrez."
+            )
     except Exception as exc:
         if settings.DEBUG or settings.APP_ENV == "development":
             logger.warning(
@@ -56,13 +66,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_kwargs: dict = {
+    "allow_credentials": True,
+    "allow_methods": ["*"],
+    "allow_headers": ["*"],
+    "allow_origins": settings.ALLOWED_ORIGINS,
+}
+
+# En dev : autoriser localhost + IP LAN (ex. http://192.168.1.99:3000)
+if settings.DEBUG or settings.APP_ENV == "development":
+    cors_kwargs["allow_origin_regex"] = (
+        r"https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?"
+    )
+
+app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 

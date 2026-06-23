@@ -26,8 +26,15 @@ export interface Consultation {
   statut: string;
   type_consultation: string;
   motif?: string;
+  symptomes?: string;
+  reponse_medecin?: string;
+  programmee_le?: string;
+  salle_video_url?: string;
   debut_le?: string;
   fin_le?: string;
+  patient_telephone?: string;
+  patient_nom?: string;
+  patient_prenom?: string;
 }
 
 export function useConsultations(statut?: string) {
@@ -50,6 +57,7 @@ export interface Ordonnance {
   consultation_id?: string;
   medicaments: Array<Record<string, string>>;
   qr_code?: string;
+  pdf_url?: string;
 }
 
 export function useOrdonnances() {

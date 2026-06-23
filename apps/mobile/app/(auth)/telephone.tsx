@@ -1,69 +1,114 @@
 import { useState } from "react";
-import { View, TextInput, Text, StyleSheet, Alert } from "react-native";
-import { router } from "expo-router";
+import { View, TextInput, Text, StyleSheet, Alert, Pressable } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import axios from "axios";
 import { isValidOrangePhone } from "@artek/shared-utils";
 import { Button, Screen } from "@/components/ui";
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import { colors } from "@/constants/theme";
 
+type Mode = "login" | "register";
+
 export default function TelephoneScreen() {
+  const { mode: modeParam } = useLocalSearchParams<{ mode?: Mode }>();
+  const [mode, setMode] = useState<Mode>(modeParam === "register" ? "register" : "login");
   const [telephone, setTelephone] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleContinue = async () => {
+  const requestOtp = async () => {
     if (!isValidOrangePhone(telephone)) {
-      Alert.alert("Numéro invalide", "Entrez un numéro Orange RCA (7XXXXXXX)");
+      Alert.alert("Numéro invalide", "Entrez un numéro Orange RCA (72, 73 ou 74…)");
       return;
     }
 
     setLoading(true);
     try {
-      const { data } = await api.post("/api/v1/auth/otp/request", { telephone });
+      const { data } = await api.post("/api/v1/auth/otp/request", {
+        telephone,
+        inscription: mode === "register",
+      });
       router.push({
         pathname: "/(auth)/otp",
-        params: { telephone, devOtp: data.dev_otp ?? "" },
+        params: {
+          telephone,
+          mode,
+          devOtp: data.dev_otp ?? "",
+          compteExiste: data.compte_existe ? "1" : "0",
+        },
       });
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        "Impossible d'envoyer le code";
-      Alert.alert("Erreur", String(msg));
+      let msg = "Impossible d'envoyer le code";
+      if (axios.isAxiosError(err)) {
+        if (!err.response) {
+          msg = `API inaccessible (${API_URL}). Vérifiez le Wi‑Fi et le backend (--host 0.0.0.0).`;
+        } else {
+          msg = String(err.response.data?.detail ?? msg);
+        }
+      }
+      Alert.alert("Erreur", msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Screen title="Connexion" subtitle="Votre numéro Orange (+236) est votre identifiant">
+    <Screen
+      title={mode === "login" ? "Connexion" : "Inscription"}
+      subtitle="Numéro Orange (+236) — préfixes 72, 73, 74"
+    >
+      <View style={styles.tabs}>
+        <Pressable
+          style={[styles.tab, mode === "login" && styles.tabActive]}
+          onPress={() => setMode("login")}
+        >
+          <Text style={[styles.tabText, mode === "login" && styles.tabTextActive]}>Connexion</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.tab, mode === "register" && styles.tabActive]}
+          onPress={() => setMode("register")}
+        >
+          <Text style={[styles.tabText, mode === "register" && styles.tabTextActive]}>
+            Créer un compte
+          </Text>
+        </Pressable>
+      </View>
+
       <Text style={styles.label}>Téléphone</Text>
       <View style={styles.row}>
         <Text style={styles.prefix}>+236</Text>
         <TextInput
           style={styles.input}
-          placeholder="77000001"
+          placeholder="72000001"
           keyboardType="phone-pad"
           maxLength={8}
           value={telephone}
           onChangeText={setTelephone}
         />
       </View>
-      <Text style={styles.hint}>Patient test : 77000001 (après seed)</Text>
-      <Button label="Recevoir le code SMS" onPress={handleContinue} loading={loading} />
+      {__DEV__ ? <Text style={styles.apiHint}>API : {API_URL}</Text> : null}
+      <Button
+        label={mode === "login" ? "Recevoir le code SMS" : "Continuer l'inscription"}
+        onPress={requestOtp}
+        loading={loading}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: "row",
+  tabs: { flexDirection: "row", marginBottom: 20, gap: 8 },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: "#E5E7EB",
     alignItems: "center",
-    gap: 8,
   },
+  tabActive: { backgroundColor: colors.green },
+  tabText: { fontSize: 13, fontWeight: "600", color: colors.textMuted },
+  tabTextActive: { color: "#fff" },
+  label: { fontSize: 14, color: colors.textMuted, marginBottom: 8 },
+  row: { flexDirection: "row", alignItems: "center", gap: 8 },
   prefix: {
     paddingVertical: 14,
     paddingHorizontal: 12,
@@ -83,9 +128,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: colors.text,
   },
-  hint: {
+  apiHint: {
     marginTop: 12,
-    fontSize: 12,
-    color: colors.textMuted,
+    fontSize: 11,
+    color: "#92400E",
+    backgroundColor: "#FEF3C7",
+    padding: 8,
+    borderRadius: 8,
   },
 });

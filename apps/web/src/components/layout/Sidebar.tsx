@@ -7,6 +7,7 @@ import {
   Heart,
   Home,
   Settings,
+  Sun,
   Users,
   Video,
   X,
@@ -21,7 +22,13 @@ const navItems = [
   { to: "/dashboard/consultation/nouvelle", label: "Consultation", icon: Video },
   { to: "/dashboard/ordonnances", label: "Ordonnances", icon: FileText },
   { to: "/dashboard/rapports", label: "Rapports", icon: Heart },
-  { to: "/dashboard/parametres", label: "Paramètres", icon: Settings },
+  { to: "/dashboard/kiosques", label: "Kiosques", icon: Sun },
+  {
+    to: "/dashboard/parametres",
+    label: "Paramètres",
+    icon: Settings,
+    search: { tab: "profil" as const },
+  },
 ];
 
 interface SidebarProps {
@@ -54,6 +61,7 @@ export function SidebarContent({ collapsed, onNavigate }: SidebarProps) {
             <Link
               key={item.to}
               to={item.to}
+              {...("search" in item && item.search ? { search: item.search } : {})}
               onClick={onNavigate}
               title={collapsed ? item.label : undefined}
               className={cn(
@@ -78,7 +86,6 @@ export function Sidebar() {
   const {
     sidebarCollapsed,
     sidebarMobileOpen,
-    toggleSidebar,
     closeMobileSidebar,
     setSidebarCollapsed,
   } = useUiStore();

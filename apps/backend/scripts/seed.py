@@ -24,27 +24,34 @@ MEDECINS_TEST = [
 
 PATIENTS_TEST = [
     {
-        "telephone": "77000001",
+        "telephone": "72000001",
         "nom": "Koyamba",
         "prenom": "Jean",
         "prefecture": "Bangui",
         "village": "PK5",
     },
     {
-        "telephone": "77000002",
+        "telephone": "72000002",
         "nom": "Nzogbo",
         "prenom": "Marie",
         "prefecture": "Ouham",
         "village": "Batangafo",
     },
     {
-        "telephone": "77000003",
+        "telephone": "72000003",
         "nom": "Banga",
         "prenom": "Emmanuel",
         "prefecture": "Bangui",
         "village": "Bimbo",
     },
 ]
+
+# Anciens numéros de test (préfixe Nationlink 77) → Orange 72
+LEGACY_PATIENT_PHONES = {
+    "77000001": "72000001",
+    "77000002": "72000002",
+    "77000003": "72000003",
+}
 
 KIOSQUES_TEST = [
     {"id": "kiosk-ouham-01", "prefecture": "Ouham", "village": "Batangafo"},
@@ -91,6 +98,15 @@ async def seed():
 
         await session.flush()
 
+        for old_phone, new_phone in LEGACY_PATIENT_PHONES.items():
+            result = await session.execute(
+                select(Patient).where(Patient.telephone == old_phone)
+            )
+            legacy = result.scalar_one_or_none()
+            if legacy:
+                legacy.telephone = new_phone
+                print(f"ℹ️  Patient migré : {old_phone} → {new_phone}")
+
         patients = []
         for data in PATIENTS_TEST:
             result = await session.execute(
@@ -99,6 +115,7 @@ async def seed():
             patient = result.scalar_one_or_none()
             if not patient:
                 patient = Patient(
+                    medecin_id=medecin.id if medecin else None,
                     telephone=data["telephone"],
                     nom_chiffre=data["nom"],
                     prenom_chiffre=data["prenom"],
@@ -109,6 +126,8 @@ async def seed():
                 session.add(patient)
                 print(f"✅ Patient créé : +236 {data['telephone']}")
             else:
+                if medecin and not patient.medecin_id:
+                    patient.medecin_id = medecin.id
                 print(f"ℹ️  Patient existant : +236 {data['telephone']}")
             patients.append(patient)
 
